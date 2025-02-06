@@ -44,6 +44,7 @@ while True :
     frames = cv2.resize(frame, (0,0) , None, 0.25, 0.25)
     frames = cv2.cvtColor(frames, cv2.COLOR_BGR2RGB)
 
+
     face_in_frame = face_rec.face_locations(frames)
     encode_in_frame = face_rec.face_encodings(frames, face_in_frame)
 
@@ -57,9 +58,9 @@ while True :
             name = studentName[matchIndex].upper()
             y1, x2, y2, x1 = faceloc
             y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4
-            cv2.rectangle(frame,(x1,y1), (x2,y2), (0,255,0), 3)
-            cv2.rectangle(frame, (x1, y2-25), (x2,y2), (0,255,0), cv2.FILLED)
-            cv2.putText(frame, name,(x1+6, y2-6), cv2.FONT_HERSHEY_COMPLEX, 1, (255,255,255), 2)
+            cv2.rectangle(frame,(x1,y1), (x2,y2), (255,0,0), 2)
+            cv2.rectangle(frame, (x1, y2-25), (x2,y2), (255,0,0), cv2.FILLED)
+            cv2.putText(frame, name,(x1+6, y2-6), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 2)
 
     cv2.imshow('video',frame)
     cv2.waitKey(1)

@@ -11,11 +11,11 @@ def resize(img, size) :
 
 
 #img declaration
-ervon = face_rec.load_image_file('sample_images/ervon.jpg')
+ervon = face_rec.load_image_file('images/ervon.jpg')
 ervon = cv2.cvtColor(ervon, cv2.COLOR_BGR2RGB)
 ervon = resize(ervon, 0.70)
 
-ervon_test = face_rec.load_image_file('sample_images/ervon_test.jpg')
+ervon_test = face_rec.load_image_file('images/niel.jpg')
 ervon_test = cv2.cvtColor(ervon_test, cv2.COLOR_BGR2RGB)
 ervon_test = resize(ervon_test, 0.70)
 
