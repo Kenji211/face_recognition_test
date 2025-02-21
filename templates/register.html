@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Register Student</title>
+    <link rel="stylesheet" href="static/style.css">
+    <script src="static/functions.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box-1">
+            <div class="camera-feed">
+                <img src="{{ url_for('video_feed') }}" alt="Camera Feed" class="camera-feed">
+            </div>
+        </div>
+        <div class="box-2">
+            <form class="student-details" action="/submit" method="post">
+                <div class="top-section">
+                    <div class="registered-image"></div>
+
+                    <input type="text" class="input-id" name="idNumber" id="idNumber"
+                        placeholder="Enter Student ID Number" required>
+                    <label for="idNumber" class="normal-text">ID Number</label>
+
+                    <input type="text" class="input-name" name="studentName" id="studentName"
+                        placeholder="Enter Student Name" required>
+                    <label for="studentName" class="normal-text">Name</label>
+                </div>
+                <div class="bottom-section">
+                    <button type="button" class="button regis-btn" onclick="registerStudent()">REGISTER</button>
+                    <button type="reset" class="button home-page" onclick="location.href='/'">CANCEL</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance</title>
+    <link rel="stylesheet" href="static/style.css">
+    <script src="static/functions.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="box-1">
+            <img src="{{ url_for('video_feed') }}" alt="Camera Feed" class="camera-feed">
+            <button class="start-btn">START</button>
+        </div>
+        <div class="box-2">
+            <div class="top-section">
+                <div class="registered-image"></div>
+                <div class="id-number"></div>
+                <p class="normal-text">ID Number</p>
+                <div class="student-name"></div>
+                <p class="normal-text">Name</p>
+            </div>
+            <div class="bottom-section">
+                <button class="button register-btn">Register Student</button>
+                <button class="button">View Records</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
