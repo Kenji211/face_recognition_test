@@ -150,7 +150,7 @@ def register_student_api():
     # Temporarily disable face detection for registration
     face_detection_enabled = False
     captured_images = 0
-    target_images = 100  # Number of images to capture
+    target_images = 30  # Number of images to capture
     timeout_seconds = 60  # Increased timeout to prevent crashes
 
     start_time = datetime.now()
