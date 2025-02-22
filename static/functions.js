@@ -54,7 +54,10 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
-            alert(data.message); // Show success message
+            alert(data.message); // Show success or error message
+            if (data.redirect) {
+                window.location.href = data.redirect; // Redirect to attendance page if specified
+            }
         })
         .catch(error => console.error("Error:", error));
     }
