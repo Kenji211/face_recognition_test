@@ -41,8 +41,6 @@ def findEncoding(images):
             encoding_list.append(encodeimg[0])
     return encoding_list
 
-
-# Generate encodings for stored images
 encode_list = findEncoding(studentImg)
 
 # Initialize camera
@@ -57,15 +55,19 @@ def extract_name_id(folder_name):
     except ValueError:
         return folder_name, "Unknown"
 
-
 # Function to record attendance
 def record_attendance(folder_name):
     file_name = "attendance.xlsx"
     now = datetime.now()
     current_date = now.strftime("%Y-%m-%d")
 
+    # Extract student name and ID
     student_name, student_id = extract_name_id(folder_name)
 
+    # Ensure ID is stored as a string for consistency
+    student_id = str(student_id)
+
+    # Create or load attendance sheet
     if os.path.exists(file_name):
         df = pd.read_excel(file_name, index_col=None)
     else:
@@ -73,18 +75,21 @@ def record_attendance(folder_name):
 
     # Ensure the current date column exists
     if current_date not in df.columns:
-        df[current_date] = ""
+        df[current_date] = "Absent"
 
-    # Check if student already exists in the record
+    # Normalize data types for matching
+    df["Student ID"] = df["Student ID"].astype(str)
+
+    # Check if the student already exists
     mask = (df["Name"] == student_name) & (df["Student ID"] == student_id)
 
     if mask.any():
-        # Mark attendance if not already marked
-        if df.loc[mask, current_date].isnull().all():
+        # Update only if not already marked "Present"
+        if df.loc[mask, current_date].iloc[0] != "Present":
             df.loc[mask, current_date] = "Present"
             print(f"✅ Attendance updated for {student_name} (ID: {student_id}) on {current_date}")
     else:
-        # Add new student record
+        # Add new student record if not found
         new_entry = {
             "Name": student_name,
             "Student ID": student_id,
@@ -93,9 +98,8 @@ def record_attendance(folder_name):
         df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
         print(f"✅ Attendance recorded for {student_name} (ID: {student_id}) on {current_date}")
 
-    # Save back to Excel
+    # Save updated attendance sheet
     df.to_excel(file_name, index=False)
-
 
 # Function to process camera frames and detect faces
 def generate_frames():
