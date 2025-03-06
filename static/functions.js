@@ -1,19 +1,50 @@
 document.addEventListener("DOMContentLoaded", function () {
     const startBtn = document.querySelector(".start-btn");
+    let pollingInterval = null; // Store interval for student polling
 
+    // Toggle Face Detection
     startBtn.addEventListener("click", function () {
         fetch("/toggle_detection", { method: "POST" })
             .then(response => response.json())
             .then(data => {
                 if (data.face_detection_enabled) {
                     startBtn.innerText = "STOP";
+                    startRecognizing(); // Start recognizing when detection is enabled
                 } else {
                     startBtn.innerText = "START";
+                    stopRecognizing(); // Stop recognizing when detection is disabled
                 }
             })
             .catch(error => console.error("Error:", error));
     });
-}); /*start scanning attendance button*/
+
+    // Function to start polling for recognized students
+    function startRecognizing() {
+        if (!pollingInterval) {
+            pollingInterval = setInterval(() => {
+                fetch("/recognized_student")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data["student-name"] && data["id-number"]) {
+                            document.querySelector(".id-number").textContent = data["id-number"];
+                            document.querySelector(".student-name").textContent = data["student-name"];
+                        }
+                    })
+                    .catch(error => console.error("Error fetching recognized student:", error));
+            }, 1000); // Fetch updated data every second
+        }
+    }
+
+    // Function to stop polling
+    function stopRecognizing() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    }
+});
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
     const registerBtn = document.querySelector(".register-btn");  /*attendance.html register button*/

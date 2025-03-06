@@ -55,16 +55,22 @@ def extract_name_id(folder_name):
     except ValueError:
         return folder_name, "Unknown"
 
+recognized_student = {}
+
+@app.route('/recognized_student')
+def get_recognized_student():
+    return jsonify(recognized_student)
+
 # Function to record attendance
 def record_attendance(folder_name):
+    global recognized_student
+
     file_name = "attendance.xlsx"
     now = datetime.now()
     current_date = now.strftime("%Y-%m-%d")
 
     # Extract student name and ID
     student_name, student_id = extract_name_id(folder_name)
-
-    # Ensure ID is stored as a string for consistency
     student_id = str(student_id)
 
     # Create or load attendance sheet
@@ -98,6 +104,7 @@ def record_attendance(folder_name):
         df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
         print(f"Attendance recorded for {student_name} (ID: {student_id}) on {current_date}")
 
+    recognized_student = {"student-name": student_name, "id-number": student_id}
     # Save updated attendance sheet
     df.to_excel(file_name, index=False)
 
