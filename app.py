@@ -63,7 +63,6 @@ def get_recognized_student():
 
 # Function to record attendance
 def record_attendance(folder_name):
-    global recognized_student
 
     file_name = "attendance.xlsx"
     now = datetime.now()
@@ -104,13 +103,11 @@ def record_attendance(folder_name):
         df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
         print(f"Attendance recorded for {student_name} (ID: {student_id}) on {current_date}")
 
-    recognized_student = {"student-name": student_name, "id-number": student_id}
-    # Save updated attendance sheet
     df.to_excel(file_name, index=False)
 
 # Function to process camera frames and detect faces
 def generate_frames():
-    global face_detection_enabled
+    global face_detection_enabled, recognized_student
 
     while True:
         success, frame = vid.read()
@@ -119,6 +116,7 @@ def generate_frames():
 
         frame = cv2.flip(frame, 1)  # Mirror effect
 
+        # Only process if detection is enabled
         if face_detection_enabled:
             small_frame = cv2.resize(frame, (0, 0), None, 0.25, 0.25)
             small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
@@ -127,24 +125,42 @@ def generate_frames():
             encode_faces = face_rec.face_encodings(small_frame, face_locations)
 
             for face_loc, encode_face in zip(face_locations, encode_faces):
-                matches = face_rec.compare_faces(encode_list, encode_face)
+                # Compare detected face against known encodings
                 face_distances = face_rec.face_distance(encode_list, encode_face)
+
+                # Set a confidence threshold for accuracy (0.4 = more strict)
+                threshold = 0.4
                 best_match_index = np.argmin(face_distances) if len(face_distances) > 0 else None
 
-                if best_match_index is not None and matches[best_match_index]:
-                    folder_name = studentName[best_match_index]  # Folder name
+                if best_match_index is not None and face_distances[best_match_index] < threshold:
+                    folder_name = studentName[best_match_index]  # Matched folder name
                     record_attendance(folder_name)
 
-                    # Draw rectangle around detected face
+                    student_name, student_id = extract_name_id(folder_name)
+                    student_id = str(student_id)
+
+                    recognized_student = {"student-name": student_name, "id-number": student_id}
+
+                    # Draw GREEN box around recognized face
                     y1, x2, y2, x1 = face_loc
                     y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                else:
+                    # Handle unrecognized face
+                    recognized_student = {"student-name": "Unrecognized", "id-number": "Unknown"}
 
+                    # Draw RED box around unrecognized face
+                    y1, x2, y2, x1 = face_loc
+                    y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+        # Encode the frame for streaming
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
 
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 
 
 # Toggle face detection

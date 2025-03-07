@@ -16,24 +16,22 @@
             </div>
         </div>
         <div class="box-2">
-            <form class="student-details" action="/submit" method="post">
-                <div class="top-section">
-                    <div class="registered-image"></div>
+            <div class="top-section">
+                <div class="registered-image"></div>
 
-                    <input type="text" class="input-name" name="studentName" id="studentName"
-                        placeholder="Enter Student Name" required>
-                    <label for="studentName" class="normal-text">Name</label>
+                <input type="text" class="student-name" name="studentName" id="studentName"
+                    placeholder="Enter Student Name" required>
+                <p><label for="studentName" class="normal-text">Name</label></p>
 
-                    <input type="text" class="input-id" name="idNumber" id="idNumber"
-                        placeholder="Enter Student ID Number" required>
-                    <label for="idNumber" class="normal-text">ID Number</label>
+                <input type="text" class="id-number" name="idNumber" id="idNumber"
+                    placeholder="Enter Student ID Number" required>
+                <p><label for="idNumber" class="normal-text">ID Number</label></p>
+            </div>
 
-                </div>
-                <div class="bottom-section">
+            <div class="bottom-section">
                     <button type="button" class="button regis-btn" onclick="registerStudent()">REGISTER</button>
                     <button type="reset" class="button home-page" onclick="location.href='/'">CANCEL</button>
-                </div>
-            </form>
+            </div>
         </div>
 
     </div>
