@@ -1,8 +1,10 @@
-from flask import Flask, render_template, Response, jsonify, request
+from flask import Flask, render_template, Response, jsonify, request, send_from_directory
 import cv2
 import numpy as np
 import face_recognition as face_rec
 import os
+import subprocess
+import platform
 import pandas as pd
 from datetime import datetime
 
@@ -46,7 +48,6 @@ encode_list = findEncoding(studentImg)
 # Initialize camera
 vid = cv2.VideoCapture(0)
 
-
 # Function to extract name and ID from folder name
 def extract_name_id(folder_name):
     try:
@@ -60,6 +61,17 @@ recognized_student = {}
 @app.route('/recognized_student')
 def get_recognized_student():
     return jsonify(recognized_student)
+
+@app.route('/student_image/<student_folder>')
+def get_student_image(student_folder):
+    folder_path = os.path.join(base_path, student_folder)
+
+    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+        images = [f for f in os.listdir(folder_path) if f.endswith('.jpg')]
+        if images:
+            return send_from_directory(folder_path, images[0])  # Serve the first image found
+
+    return jsonify({"error": "Image not found"}), 404
 
 # Function to record attendance
 def record_attendance(folder_name):
@@ -143,7 +155,7 @@ def generate_frames():
 
                     # Draw GREEN box around recognized face
                     y1, x2, y2, x1 = face_loc
-                    y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                    y1, x2, y2, x1 = y1 * 4 - 20, x2 * 4 + 10, y2 * 4 - 10, x1 * 4 - 10
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 else:
                     # Handle unrecognized face
@@ -151,7 +163,7 @@ def generate_frames():
 
                     # Draw RED box around unrecognized face
                     y1, x2, y2, x1 = face_loc
-                    y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                    y1, x2, y2, x1 = y1 * 4 - 20, x2 * 4 + 10, y2 * 4 - 10, x1 * 4 - 10
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
         # Encode the frame for streaming
@@ -161,8 +173,6 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-
-
 # Toggle face detection
 @app.route('/toggle_detection', methods=['POST'])
 def toggle_detection():
@@ -170,17 +180,31 @@ def toggle_detection():
     face_detection_enabled = not face_detection_enabled
     return jsonify({"face_detection_enabled": face_detection_enabled})
 
-
 # Routes
 @app.route('/')
 def index():
     return render_template('attendance.html')
 
-
 @app.route('/register')
 def register():
     return render_template('register.html')
 
+
+@app.route('/open_excel')
+def open_excel():
+    file_path = os.path.abspath("attendance.xlsx")  # Get absolute path
+
+    try:
+        if platform.system() == "Windows":
+            os.startfile(file_path)  # Windows
+        elif platform.system() == "Darwin":  # macOS
+            subprocess.run(["open", file_path])
+        elif platform.system() == "Linux":
+            subprocess.run(["xdg-open", file_path])
+
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 @app.route('/disable_detection', methods=['POST'])
 def disable_detection():
@@ -214,7 +238,7 @@ def register_student_api():
     # Temporarily disable face detection for registration
     face_detection_enabled = False
     captured_images = 0
-    target_images = 10  # Number of images to capture
+    target_images = 5  # Number of images to capture
     timeout_seconds = 60  # Increased timeout to prevent crashes
 
     start_time = datetime.now()
@@ -231,14 +255,19 @@ def register_student_api():
 
             frame = cv2.flip(frame, 1)  # Mirror the frame
 
-            # Detect faces and save only if a face is present
+            # Detect faces and crop the first detected face
             faces = face_rec.face_locations(frame)
             if faces:
-                # Use only student_name for image filename, not ID (e.g., "John Doe_0.jpg")
-                filename = os.path.join(student_folder, f"{student_name}_{captured_images}.jpg")
-                cv2.imwrite(filename, frame)
-                captured_images += 1
-                print(f"Captured {captured_images}/{target_images} images for {folder_name}")
+                top, right, bottom, left = faces[0]  # Get coordinates of the first detected face
+
+                # Crop face region from the frame
+                face_image = frame[top:bottom, left:right]
+
+                if face_image.size > 0:  # Ensure a valid face was detected
+                    filename = os.path.join(student_folder, f"{student_name}_{captured_images}.jpg")
+                    cv2.imwrite(filename, face_image)
+                    captured_images += 1
+                    print(f"Captured {captured_images}/{target_images} images for {folder_name}")
 
             # Reduce delay for faster processing
             cv2.waitKey(1)  # Reduced from 10ms to 1ms

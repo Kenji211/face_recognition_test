@@ -49,6 +49,16 @@
     border: 1px solid black;
 }
 
+.student-photo {
+    width: 168px;
+    height: 168px;
+    border-radius: 3px;
+    object-fit: cover;
+    display: block;
+    margin: auto;
+    border: 1px solid black;
+}
+
 .id-number {
     width: 17vw;
     height: 30px;

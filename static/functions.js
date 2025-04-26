@@ -28,9 +28,21 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (data["student-name"] && data["id-number"]) {
                             document.querySelector(".id-number").textContent = data["id-number"];
                             document.querySelector(".student-name").textContent = data["student-name"];
+
+                             // Construct image URL based on student folder
+                            let studentFolder = `${data["student-name"]}_${data["id-number"]}`;
+                            let imageUrl = `/student_image/${studentFolder}`;
+
+                            // Update the image src
+                            let studentPhoto = document.getElementById("student-photo");
+                            studentPhoto.src = imageUrl;
+                            studentPhoto.hidden = false; // Show image
                         }
                     })
-                    .catch(error => console.error("Error fetching recognized student:", error));
+                    .catch(error => {
+                    console.error("Error fetching recognized student:", error);
+                    document.getElementById("student-photo").src = "/static/default-profile.png"; // Error fallback
+                });
             }, 1000); // Fetch updated data every second
         }
     }
@@ -93,3 +105,17 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => console.error("Error:", error));
     }
 });/*registering student*/
+
+
+function openExcel() {
+    fetch("/open_excel")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Excel file opened successfully!");
+            } else {
+                alert("Failed to open Excel file.");
+            }
+        })
+        .catch(error => console.error("Error opening Excel:", error));
+}
